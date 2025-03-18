@@ -74,13 +74,21 @@ class Gatling extends Creature{
             }
             taskQueue.push(onDone => this.view.showAttack(onDone));
             taskQueue.push(onDone => {
-                this.dealDamageToCreature(this.currentPower, oppositeCard, gameContext, onDone);
+                this.dealDamageToCreature(2, oppositeCard, gameContext, onDone);
             });
         }
         taskQueue.continueWith(continuation);
 
     }
+
+    getDescriptions() {
+        return [
+            'Наносит 2 урона всем картам противника',
+            ...super.getDescriptions(),
+        ];
+    }
 }
+
 
 class Trasher extends Dog {
     constructor(name = 'Громила', maxPower = 5, image){
@@ -105,10 +113,14 @@ class Trasher extends Dog {
 
 const seriffStartDeck = [
     new Duck(),
+    new Duck(),
+    new Duck(),
     new Gatling(),
 ];
 const banditStartDeck = [
     new Trasher(),
+    new Dog(),
+    new Dog(),
 ];
 
 // Создание игры.
