@@ -58,6 +58,27 @@ class Dog extends Creature {
     }
 }
 
+class Brewer extends Duck {
+    constructor(name = 'Пивовар', maxPower = 2, image) {
+        super(name, maxPower, image);
+    }
+    doBeforeAttack(gameContext, continuation) {
+        const { currentPlayer, oppositePlayer } = gameContext;
+        const allCards = currentPlayer.table.concat(oppositePlayer.table);
+        allCards.forEach(card => {
+            if (isDuck(card)) {
+                card.maxPower += 1;
+                card.currentPower += 2;
+                card.view.signalHeal(() => {
+                    card.updateView();
+                });
+            }
+        });
+
+        super.doBeforeAttack(gameContext, continuation);
+    }
+}
+
 class Lad extends Dog {
     constructor(name = 'Браток', maxPower = 2, image) {
         super(name, maxPower, image);
@@ -184,14 +205,15 @@ class Trasher extends Dog {
 
 const seriffStartDeck = [
     new Duck(),
-    new Duck(),
-    new Duck(),
-    new Rogue(),
+    new Brewer(),
 ];
+
+// Колода Бандита, верхнего игрока.
 const banditStartDeck = [
-    new Lad(),
-    new Lad(),
-    new Lad(),
+    new Dog(),
+    new Dog(),
+    new Dog(),
+    new Dog(),
 ];
 
 // Создание игры.
