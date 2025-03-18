@@ -72,6 +72,27 @@ class Dog extends Creature {
     }
 }
 
+class Brewer extends Duck {
+    constructor(name = 'Пивовар', maxPower = 2, image) {
+        super(name, maxPower, image);
+    }
+    doBeforeAttack(gameContext, continuation) {
+        const { currentPlayer, oppositePlayer } = gameContext;
+        const allCards = currentPlayer.table.concat(oppositePlayer.table);
+        allCards.forEach(card => {
+            if (isDuck(card)) {
+                card.maxPower += 1;
+                card.currentPower += 2;
+                card.view.signalHeal(() => {
+                    card.updateView();
+                });
+            }
+        });
+
+        super.doBeforeAttack(gameContext, continuation);
+    }
+}
+
 class Lad extends Dog {
     constructor(name = 'Браток', maxPower = 2, image) {
         super(name, maxPower, image);
@@ -112,10 +133,40 @@ class Lad extends Dog {
 
     getDescriptions() {
         const descriptions = [];
-        if (Lad.getInGameCount() > 0) {
+        if (Lad.prototype.hasOwnProperty('modifyDealedDamageToCreature') || Lad.prototype.hasOwnProperty('modifyTakenDamage')) {
             descriptions.push('Чем их больше, тем они сильнее');
         }
         return [...descriptions, ...super.getDescriptions()];
+    }
+}
+
+class Rogue extends Creature {
+    constructor(name = 'Изгой', maxPower = 2, image) {
+        super(name, maxPower, image);
+    }
+
+    stealAbilities(targetCard, gameContext) {
+        const targetPrototype = Object.getPrototypeOf(targetCard);
+        const abilities = ['modifyDealedDamageToCreature', 'modifyDealedDamageToPlayer', 'modifyTakenDamage'];
+
+        abilities.forEach(ability => {
+            if (targetPrototype.hasOwnProperty(ability)) {
+                this[ability] = targetPrototype[ability];
+                delete targetPrototype[ability];
+                gameContext.updateView();
+            }
+        });
+    }
+
+    doBeforeAttack(gameContext, continuation) {
+        const { oppositePlayer, position } = gameContext;
+        const targetCard = oppositePlayer.table[position];
+
+        if (targetCard) {
+            this.stealAbilities(targetCard, gameContext);
+        }
+
+        super.doBeforeAttack(gameContext, continuation);
     }
 }
 
@@ -137,21 +188,13 @@ class Gatling extends Creature{
             }
             taskQueue.push(onDone => this.view.showAttack(onDone));
             taskQueue.push(onDone => {
-                this.dealDamageToCreature(2, oppositeCard, gameContext, onDone);
+                this.dealDamageToCreature(this.currentPower, oppositeCard, gameContext, onDone);
             });
         }
         taskQueue.continueWith(continuation);
 
     }
-
-    getDescriptions() {
-        return [
-            'Наносит 2 урона всем картам противника',
-            ...super.getDescriptions(),
-        ];
-    }
 }
-
 
 class Trasher extends Dog {
     constructor(name = 'Громила', maxPower = 5, image){
@@ -176,14 +219,16 @@ class Trasher extends Dog {
 
 const seriffStartDeck = [
     new Duck(),
-    new Duck(),
-    new Duck(),
-];
-const banditStartDeck = [
-    new Lad(),
-    new Lad(),
+    new Brewer(),
 ];
 
+// Колода Бандита, верхнего игрока.
+const banditStartDeck = [
+    new Dog(),
+    new Dog(),
+    new Dog(),
+    new Dog(),
+];
 
 // Создание игры.
 const game = new Game(seriffStartDeck, banditStartDeck);
