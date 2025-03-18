@@ -41,6 +41,14 @@ function Dog() {
 }
 
 
+//3
+class Creature extends Card {
+    getDescriptions() {
+        return [getCreatureDescription(this), super.getDescriptions()];
+    };
+}
+
+
 // Колода Шерифа, нижнего игрока.
 const seriffStartDeck = [
     new Card('Мирный житель', 2),
