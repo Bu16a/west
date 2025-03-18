@@ -98,10 +98,40 @@ class Lad extends Dog {
 
     getDescriptions() {
         const descriptions = [];
-        if (Lad.getInGameCount() > 0) {
+        if (Lad.prototype.hasOwnProperty('modifyDealedDamageToCreature') || Lad.prototype.hasOwnProperty('modifyTakenDamage')) {
             descriptions.push('Чем их больше, тем они сильнее');
         }
         return [...descriptions, ...super.getDescriptions()];
+    }
+}
+
+class Rogue extends Creature {
+    constructor(name = 'Изгой', maxPower = 2, image) {
+        super(name, maxPower, image);
+    }
+
+    stealAbilities(targetCard, gameContext) {
+        const targetPrototype = Object.getPrototypeOf(targetCard);
+        const abilities = ['modifyDealedDamageToCreature', 'modifyDealedDamageToPlayer', 'modifyTakenDamage'];
+
+        abilities.forEach(ability => {
+            if (targetPrototype.hasOwnProperty(ability)) {
+                this[ability] = targetPrototype[ability];
+                delete targetPrototype[ability];
+                gameContext.updateView();
+            }
+        });
+    }
+
+    doBeforeAttack(gameContext, continuation) {
+        const { oppositePlayer, position } = gameContext;
+        const targetCard = oppositePlayer.table[position];
+
+        if (targetCard) {
+            this.stealAbilities(targetCard, gameContext);
+        }
+
+        super.doBeforeAttack(gameContext, continuation);
     }
 }
 
@@ -123,21 +153,13 @@ class Gatling extends Creature{
             }
             taskQueue.push(onDone => this.view.showAttack(onDone));
             taskQueue.push(onDone => {
-                this.dealDamageToCreature(2, oppositeCard, gameContext, onDone);
+                this.dealDamageToCreature(this.currentPower, oppositeCard, gameContext, onDone);
             });
         }
         taskQueue.continueWith(continuation);
 
     }
-
-    getDescriptions() {
-        return [
-            'Наносит 2 урона всем картам противника',
-            ...super.getDescriptions(),
-        ];
-    }
 }
-
 
 class Trasher extends Dog {
     constructor(name = 'Громила', maxPower = 5, image){
@@ -164,12 +186,13 @@ const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
+    new Rogue(),
 ];
 const banditStartDeck = [
     new Lad(),
     new Lad(),
+    new Lad(),
 ];
-
 
 // Создание игры.
 const game = new Game(seriffStartDeck, banditStartDeck);
