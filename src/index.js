@@ -98,7 +98,7 @@ class Lad extends Dog {
 
     getDescriptions() {
         const descriptions = [];
-        if (Lad.prototype.hasOwnProperty('modifyDealedDamageToCreature') || Lad.prototype.hasOwnProperty('modifyTakenDamage')) {
+        if (Lad.getInGameCount() > 0) {
             descriptions.push('Чем их больше, тем они сильнее');
         }
         return [...descriptions, ...super.getDescriptions()];
@@ -164,13 +164,12 @@ const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
-    new Gatling(),
 ];
 const banditStartDeck = [
-    new Trasher(),
-    new Dog(),
-    new Dog(),
+    new Lad(),
+    new Lad(),
 ];
+
 
 // Создание игры.
 const game = new Game(seriffStartDeck, banditStartDeck);
