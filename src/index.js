@@ -27,8 +27,17 @@ function getCreatureDescription(card) {
     return 'Существо';
 }
 
+
+
+//3
+class Creature extends Card {
+    getDescriptions() {
+        return [getCreatureDescription(this), super.getDescriptions()];
+    };
+}
+
 // Класс Duck, унаследованный от Card
-class Duck extends Card {
+class Duck extends Creature {
     constructor(name = 'Мирная утка', maxPower = 2, image) {
         super(name, maxPower, image);
     }
@@ -43,19 +52,13 @@ class Duck extends Card {
 }
 
 // Класс Dog, унаследованный от Card
-class Dog extends Card {
+class Dog extends Creature {
     constructor(name = 'Пес-бандит', maxPower = 3, image) {
         super(name, maxPower, image);
     }
 }
 
 
-//3
-class Creature extends Card {
-    getDescriptions() {
-        return [getCreatureDescription(this), super.getDescriptions()];
-    };
-}
 
 
 // Колода Шерифа, нижнего игрока.
