@@ -82,6 +82,25 @@ class Gatling extends Creature{
     }
 }
 
+class Trasher extends Dog {
+    constructor(name = 'Громила', maxPower = 5, image){
+        super(name, maxPower, image);
+    }
+
+    modifyTakenDamage(value, fromCard, gameContext, continuation) {
+        const reducedValue = Math.max(value - 1, 0);
+        this.view.signalAbility(() => {
+            continuation(reducedValue);
+        });
+    }
+
+    getDescriptions() {
+        return [
+            'Получает на 1 меньше урона при атаке',
+            ...super.getDescriptions(),
+        ];
+    }
+}
 
 
 const seriffStartDeck = [
@@ -89,13 +108,7 @@ const seriffStartDeck = [
     new Gatling(),
 ];
 const banditStartDeck = [
-    new Dog(),
-    new Dog(),
-    new Dog(),
-    new Dog(),
-    new Dog(),
-    new Dog(),
-
+    new Trasher(),
 ];
 
 // Создание игры.
